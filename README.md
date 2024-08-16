@@ -1,3 +1,9 @@
+![NPM Version](https://img.shields.io/npm/v/i4n?style=flat-square&color=indigo)
+![NPM Downloads](https://img.shields.io/npm/d18m/i4n?style=flat-square&color=indigo)
+![NPM License](https://img.shields.io/npm/l/i4n?style=flat-square&color=indigo)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/i4n?style=flat-square&color=indigo)
+![NPM Type Definitions](https://img.shields.io/npm/types/i4n?style=flat-square&color=indigo)
+
 # i4n
 
 🌐🪶 Lightweight, Zero dependencies, Typesafe and Simple to use translations for TypeScript.
