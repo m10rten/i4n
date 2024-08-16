@@ -54,9 +54,8 @@ const translations = {
 } as const;
 ```
 
-> ⚠️ Warning
-
-Watch out when making bulk translations, in that case be sure to type it yourself as this may cause the `i4n` package to not work as intended or expected.
+> ⚠️ Warning:
+> Watch out when making bulk translations, in that case be sure to type it yourself as this may cause the `i4n` package to not work as intended or expected.
 
 For example:
 
@@ -79,7 +78,8 @@ To overcome this, implement your own types:
 type TranslationData = {
   earth: string;
 };
-type TranslationSet = Record<string, TranslationData>;
+type Language = "en" | "es" | "fr";
+type TranslationSet = Record<Language, TranslationData>;
 
 const translations: TranslationSet = {
   en: {
@@ -130,3 +130,15 @@ i4n.switch("es");
 
 console.log(i4n.t("hi")); // "Ola"
 ```
+
+## `I4nException`
+
+When using this package, be sure not to force types.
+
+The `translations` prop in the `I4n` class can only accept objects, no `Map`, `Set` or `Array`.
+
+In that case, the module will throw a `I4nException` error.
+
+The same error is thrown when (also forced) switching to a language that is not in the translations.
+
+These errors will need to be catched if you need to force some functionality, but this is strongly discouraged because it may break any end-user experience.
