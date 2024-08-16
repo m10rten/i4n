@@ -1,8 +1,8 @@
-[![NPM Version](https://img.shields.io/npm/v/i4n?style=flat-square&color=indigo)](npmjs.com/i4n/)
-[![NPM Downloads](https://img.shields.io/npm/d18m/i4n?style=flat-square&color=indigo)](npmjs.com/i4n/)
-[![NPM License](https://img.shields.io/npm/l/i4n?style=flat-square&color=indigo)](npmjs.com/i4n/)
-[![npm bundle size](https://img.shields.io/bundlephobia/minzip/i4n?style=flat-square&color=indigo)](npmjs.com/i4n/)
-[![NPM Type Definitions](https://img.shields.io/npm/types/i4n?style=flat-square&color=indigo)](npmjs.com/i4n/)
+[![NPM Version](https://img.shields.io/npm/v/i4n?style=flat-square&color=indigo)](https://npmjs.com/i4n/)
+[![NPM Downloads](https://img.shields.io/npm/d18m/i4n?style=flat-square&color=indigo)](https://npmjs.com/i4n/)
+[![NPM License](https://img.shields.io/npm/l/i4n?style=flat-square&color=indigo)](https://npmjs.com/i4n/)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/i4n?style=flat-square&color=indigo)](https://npmjs.com/i4n/)
+[![NPM Type Definitions](https://img.shields.io/npm/types/i4n?style=flat-square&color=indigo)](https://npmjs.com/i4n/)
 
 # i4n
 
