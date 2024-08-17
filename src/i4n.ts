@@ -37,6 +37,9 @@ export class I4n<T extends Record<string, unknown>, L extends keyof T & string> 
       throw new I4nException("Array, Set or Map cannot be used as translations require keys");
     this._data = props.translations;
     this._lang = props.language;
+
+    this.t = this.t.bind(this);
+    this.switch = this.switch.bind(this);
   }
 
   /**

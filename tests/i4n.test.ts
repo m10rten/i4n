@@ -100,4 +100,9 @@ describe("I4n", () => {
     const test_input = { count: 4, type: "ice" };
     expect(i4n.t("object_template", test_input)).toBe(testTranslations["en"]?.object_template(test_input));
   });
+
+  test("If the t works detached from the i4n instance", () => {
+    const { t } = i4n;
+    expect(t("earth")).toBe(testTranslations["en"]?.earth);
+  });
 });
