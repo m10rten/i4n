@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import I4n, { I4nException } from "../src";
 
 type TranslationData = {
@@ -5,6 +6,9 @@ type TranslationData = {
   nested: {
     key: string;
   };
+  single_template: (name: string) => string;
+
+  object_template: ({ type, count }: { type: string; count: number }) => string;
 };
 type TranslationSet = Record<string, TranslationData>;
 
@@ -15,6 +19,10 @@ const testTranslations: TranslationSet = {
     nested: {
       key: "english key",
     },
+
+    single_template: (name) => `Hello ${name}`,
+
+    object_template: ({ type, count }) => `[${type}]: has ${count}`,
   },
   es: {
     earth: "Mundo",
@@ -22,6 +30,10 @@ const testTranslations: TranslationSet = {
     nested: {
       key: "key espanol",
     },
+
+    single_template: (name) => `Ola ${name}`,
+
+    object_template: ({ type, count }) => `[${type}]: a ${count}`,
   },
 };
 
@@ -75,5 +87,17 @@ describe("I4n", () => {
     } catch (e) {
       expect(e).toBeInstanceOf(I4nException);
     }
+  });
+
+  test("If the module can handle templating with a single string parameter", () => {
+    expect(i4n.t("single_template")).toBeInstanceOf(Function);
+    const test_data = "john";
+    expect(i4n.t("single_template", test_data)).toBe(testTranslations["en"]?.single_template(test_data));
+  });
+
+  test("If the module can handle templating with an object parameter", () => {
+    expect(i4n.t("object_template")).toBeInstanceOf(Function);
+    const test_input = { count: 4, type: "ice" };
+    expect(i4n.t("object_template", test_input)).toBe(testTranslations["en"]?.object_template(test_input));
   });
 });

@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { I4nException } from "./errors";
 import type { Path, Value } from "./types";
 
 /**
  * @prop {translations} - the data required for the translation module to return text.
+ *
+ * @link https://github.com/m10rten/i4n/ - for more information
  *
  * Should be in [lang: string]: {key: string | object} structure
  * @example
@@ -41,19 +44,41 @@ export class I4n<T extends Record<string, unknown>, L extends keyof T & string> 
    * @param path the path to the translation, this is is typed for you based on the translations.
    * @returns string or undefined based on the path you provide.
    */
-  public t<P extends Path<T[L], L>>(path: P): Value<T[L], L, P> {
-    const keys = String(path).split(".") as Array<keyof T[L]>;
+  public t<P extends Path<T[L], L>, V extends Value<T[L], L, P>, R extends V>(path: P): R;
 
-    let result = this._data[this._lang];
+  /**
+   * You added parameters, expecting to find a function, do not force extra arguments if you are not expecting to find a function since that will confuse the type system and give you as a user the wrong types.
+   * @param path the path to the function
+   * @param args the typed parameters for this function
+   */
+  public t<
+    P extends Path<T[L], L>,
+    V extends Value<T[L], L, P>,
+    A extends V extends (...args: infer A) => any ? A : never,
+    R extends V extends (...args: any[]) => any ? ReturnType<V> : V,
+  >(path: P, ...args: A): R;
+
+  /**
+   * `t` function on the `I4n` class.
+   * @param path string to find in your translations.
+   * @param args optional arguments to execute a template function.
+   * @returns a string from the translations, a function or object, or the result of a function.
+   */
+  public t(path: string, ...args: unknown[]): unknown {
+    const keys = String(path).split(".");
+
+    let result: any = this._data[this._lang];
 
     for (const key of keys) {
-      result = result?.[key] as T[L];
+      result = result?.[key];
       if (result === undefined) {
         return undefined as never;
       }
     }
 
-    return result as Value<T[L], L, P>;
+    if (typeof result === "function" && args.length !== 0) return result(...args);
+
+    return result;
   }
 
   /**

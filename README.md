@@ -137,6 +137,39 @@ i4n.switch("es");
 console.log(i4n.t("hi")); // "Ola"
 ```
 
+### Templates
+
+When working with `i4n`, you might find that you want to modify the output.
+
+With templates, there are a few small steps required to get started:
+
+**Step 1**: Edit your translations to include a template function.
+
+This can be any function, I chose for it to look like this:
+
+```ts
+const translations: TranslationSet = {
+  en: {
+    sayHiTo: (name: string) => `Hello ${name}`,
+  },
+  es: {
+    sayHiTo: (name: string) => `Ola ${name}`,
+  },
+};
+```
+
+**Step 2**: Call your new template with custom parameters.
+
+You will then call the function `t` the same way, but with the parameters you defined:
+
+```ts
+i4n.t("sayHiTo", "John"); // "Hello John"
+```
+
+> 💡 As mentioned, this works with the parameters **you** defined. Objects and custom classes will also work!
+
+This may seem small, but this is fully typed, making it very easy to define and use your templates in your code.
+
 ## `I4nException`
 
 When using this package, be sure not to force types.
