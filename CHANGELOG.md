@@ -1,5 +1,11 @@
 # i4n
 
+## 0.2.1
+
+### Patch Changes
+
+- eadab70: Fix to be able to detatch `t` and `switch` from the `I4n` instance.
+
 ## 0.2.0
 
 ### Minor Changes
