@@ -1,5 +1,11 @@
 # i4n
 
+## 0.3.1
+
+### Patch Changes
+
+- f85bbf2: Updated readme to be smaller for the package and larger for github with link in package.json
+
 ## 0.3.0
 
 ### Minor Changes
