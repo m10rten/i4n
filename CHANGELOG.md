@@ -1,5 +1,11 @@
 # i4n
 
+## 0.3.2
+
+### Patch Changes
+
+- cd81ed8: Removed comments from package output
+
 ## 0.3.1
 
 ### Patch Changes
