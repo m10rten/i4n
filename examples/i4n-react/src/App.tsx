@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { I4n } from "i4n";
 
 import "./App.css";
@@ -25,17 +25,18 @@ const i4n = new I4n({ translations, language: "en", fallbackLanguage: "en" });
 function App() {
   const [lang, setLang] = useState<Language>("en");
 
-  useEffect(() => {
-    i4n.switch(lang === "en" ? "nl" : "en");
-  }, [lang]);
+  const toggleLanguage = () => {
+    const newLang = lang === "en" ? "nl" : "en";
+    setLang(newLang);
+    i4n.switch(newLang);
+  };
 
   return (
-    <>
-      <button onClick={() => setLang("nl")}>NL</button>
-      <button onClick={() => setLang("en")}>EN</button>
+    <div>
+      <button onClick={toggleLanguage}>Switch to {lang === "en" ? "Dutch" : "English"}</button>
       <hr />
-      {i4n.t("hello")}
-    </>
+      <p>{i4n.t("hello")}</p>
+    </div>
   );
 }
 
