@@ -16,7 +16,7 @@
   },
   "readme": "",
   "scripts": {
-    "build": "tsup --format cjs,esm --dts",
+    "build": "tsup --format esm,cjs --dts",
     "lint": "eslint src/**/*.ts",
     "test": "jest",
     "typecheck": "tsc --noEmit",
@@ -34,7 +34,6 @@
   "keywords": [],
   "author": "m10rten",
   "license": "MIT",
-  "type": "module",
   "devDependencies": {
     "@changesets/cli": "2.27.7",
     "@eslint/js": "9.9.0",
