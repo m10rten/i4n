@@ -65,9 +65,7 @@ Then initialize the class with your translations and default language:
 const i4n = new I4n({ translations, language: "en", fallbackLanguage: "fr" });
 ```
 
-- **translations**: the translations you just created.
-- **language**: the default language the translation function will start with.
-- **fallbackLanguage**: the language it should fall back to.
+You will then have access to the methods, can detach the functions and start translating.
 
 ## API
 
@@ -89,10 +87,12 @@ new I4n(config: {
 
 #### `t(key: string | string[], ...args: any[])`
 
-Retrieves a translation value based on the provided key. Supports dot notation for nested keys and fallback keys.
+Retrieves a translation value based on the provided key. Supports `dot.notation` for nested keys and fallback keys.
 
 - **key**: The translation key or array of keys for fallback.
 - **args**: Additional arguments for template functions.
+
+This method will use the `fallbackLanguage`, if present, when the keys cannot be found in the current language.
 
 **Usage Example:**
 
