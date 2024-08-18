@@ -1,5 +1,11 @@
 # i4n
 
+## 0.3.4
+
+### Patch Changes
+
+- 2260d7e: Fixed the missing of files in the output
+
 ## 0.3.3
 
 ### Patch Changes
