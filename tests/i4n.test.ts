@@ -6,6 +6,9 @@ type TranslationData = {
   nested: {
     key: string;
   };
+  to_fallback?: string | undefined;
+  only_in_english?: string | undefined;
+  fallback: string;
   single_template: (name: string) => string;
 
   object_template: ({ type, count }: { type: string; count: number }) => string;
@@ -19,6 +22,8 @@ const testTranslations: TranslationSet = {
     nested: {
       key: "english key",
     },
+    fallback: "fallback",
+    only_in_english: "Hello fallback language",
 
     single_template: (name) => `Hello ${name}`,
 
@@ -30,6 +35,7 @@ const testTranslations: TranslationSet = {
     nested: {
       key: "key espanol",
     },
+    fallback: "fallback",
 
     single_template: (name) => `Ola ${name}`,
 
@@ -104,5 +110,45 @@ describe("I4n", () => {
   test("If the t works detached from the i4n instance", () => {
     const { t } = i4n;
     expect(t("earth")).toBe(testTranslations["en"]?.earth);
+  });
+
+  test("If it works with a fallback key and random strings", () => {
+    expect(i4n.t("to_fallback")).toBe(undefined);
+    expect(i4n.t(["to_fallback"])).toBe(undefined);
+    expect(i4n.t(["to_fallback", "fallback"])).toBe(testTranslations["en"]?.fallback);
+  });
+
+  test("An undefined key should return undefined", () => {
+    expect(i4n.t(undefined as unknown as string)).toBe(undefined);
+  });
+
+  test("To see if an empty language switch thrws error", () => {
+    try {
+      i4n.switch(undefined as unknown as string);
+    } catch (e) {
+      expect(e).toBeInstanceOf(I4nException);
+      if (e instanceof I4nException) {
+        expect(e.type).toBe("invalid-language");
+      }
+    }
+  });
+
+  test("To see if a fallback language works", () => {
+    i4n.switch("es");
+    expect(i4n.t("only_in_english")).toBe(undefined);
+    const _i4n = new I4n({ translations: testTranslations, language: "es", fallbackLanguage: "en" });
+    expect(_i4n.t("only_in_english")).toBe(testTranslations["en"]?.only_in_english);
+  });
+
+  test("If the active language can be get", () => {
+    i4n.switch("en");
+    expect(i4n.active).toBe("en");
+
+    i4n.switch("es");
+    expect(i4n.active).toBe("es");
+  });
+
+  test("If the list of languages can be get", () => {
+    expect(i4n.languages).toEqual(["en", "es"]);
   });
 });

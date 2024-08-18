@@ -103,11 +103,12 @@ const translations: TranslationSet = {
 Then initialize the class with your translations and default language:
 
 ```ts
-const i4n = new I4n({ translations, language: "en" });
+const i4n = new I4n({ translations, language: "en", fallbackLanguage: "fr" });
 ```
 
 - **translations**: the translations you just created having `hi`, `earth`, `what.happened` in it.
 - **language**: the default language the translation function will start with.
+- **fallbackLanguage**: the language it should fall back to.
 
 ## Functions
 
@@ -125,6 +126,45 @@ Calling the `t` method for just an object (not the nested key), will result in t
 
 ```ts
 console.log(i4n.t("what")); // { happened: "What happened?" }
+```
+
+#### Fallback keys
+
+When using `i4n` with an API, you might have different translations for different error codes, but you do not want to type out all the HTTP error codes in your translations. Introducing: fallbacks.
+
+With fallbacks, you can give a second key that should be used instead if the first key does not return a value.
+
+This looks like this:
+
+```ts
+const translations = {
+  en: {
+    errors: {
+      "404": "Not found error",
+      "500": "Server error",
+      unspecified: "unspecified",
+    },
+  },
+};
+const i4n = new I4n({ translations, language });
+
+// your api call for example ...
+// you get an error code from the `fetch`, e.g:  code: 401
+const text = i4n.t([`errors.${code}`, "errors.unspecified"]); // "unspecified"
+```
+
+This will make development easier for not having to check if you have all the expected translations present.
+
+#### Fallback Language
+
+You might forget to translate something, this config option makes sure you will have a language to fall back to.
+
+```ts
+// ... translations
+const i4n = new I4n({ fallbackLanguage: "en" });
+i4n.switch("es");
+
+i4n.t("say-hi"); // does not exist in 'es' -> "Hello" from 'en'
 ```
 
 ### `switch`
