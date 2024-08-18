@@ -59,7 +59,7 @@ export class I4n<T extends Record<string, unknown>, L extends keyof T & string> 
    * @returns string or undefined based on the path you provide.
    */
   public t<P extends Path<T[L], L>, P2 extends Path<T[L], L>, V extends Value<T[L], L, P>>(
-    path: P | string | [P | (string & {})] | [P | (string & {}), P2 | (string & {})],
+    path: P | (string & {}) | [P | (string & {})] | [P | (string & {}), P2 | (string & {})],
   ): V;
 
   /**

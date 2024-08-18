@@ -16,6 +16,21 @@ To use this package, install with npm:
 npm install i4n
 ```
 
+## Contents
+
+- [i4n](#i4n)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Init](#init)
+- [Functions](#functions)
+  - [`t`](#t)
+    - [Fallback keys](#fallback-keys)
+    - [Fallback language](#fallback-language)
+  - [`switch`](#switch)
+  - [Templates](#templates)
+- [`I4nException`](#i4nexception)
+<!-- - [Examples](#examples) -->
+
 ## Usage
 
 To get started with translating, import the I4n class:
@@ -221,3 +236,16 @@ In that case, the module will throw a `I4nException` error.
 The same error is thrown when (also forced) switching to a language that is not in the translations.
 
 These errors will need to be catched if you need to force some functionality, but this is strongly discouraged because it may break any end-user experience.
+
+<!-- ## Examples
+
+To showcase the `i4n` package, there have been made several examples.
+
+The following examples are present in this repository:
+
+- [**Nextjs.org**](https://nextjs.org/) - [examples/i4n-next](../examples/i4n-next/README.md)
+- [**Hono.dev**](https://hono.dev/) - [examples/i4n-hono](../examples/i4n-hono/README.md) -->
+
+<hr />
+
+[back to top](#i4n)

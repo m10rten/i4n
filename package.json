@@ -1,11 +1,11 @@
 {
   "name": "i4n",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Lightweight, Zero dependencies, Typesafe and Simple to use translations for TypeScript.",
   "private": false,
+  "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
   "homepage": "https://github.com/m10rten/i4n#readme",
   "repository": {
     "type": "git",
@@ -54,22 +54,24 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.mjs"
     },
     "./i4n": {
-      "import": "./dist/i4n.mjs",
+      "types": "./dist/i4n.d.ts",
       "require": "./dist/i4n.js",
-      "types": "./dist/i4n.d.ts"
+      "import": "./dist/i4n.mjs"
     },
     "./errors": {
-      "import": "./dist/errors.mjs",
+      "types": "./dist/errors.d.ts",
       "require": "./dist/errors.js",
-      "types": "./dist/errors.d.ts"
+      "import": "./dist/errors.mjs"
     },
     "./types": {
-      "types": "./dist/types.d.ts"
+      "types": "./dist/types.d.ts",
+      "require": "./dist/types.js",
+      "import": "./dist/types.mjs"
     },
     "./package.json": "./package.json"
   },
