@@ -69,10 +69,11 @@ export class I4n<T extends Record<string, unknown>, L extends keyof T & string> 
    */
   public t<
     P extends Path<T[L], L>,
+    P2 extends Path<T[L], L>,
     V extends Value<T[L], L, P>,
     A extends V extends (...args: infer A) => any ? A : never,
     R extends V extends (...args: any[]) => any ? ReturnType<V> : V,
-  >(path: (P | (string & {})) | [P | (string & {})] | [P | (string & {}), string], ...args: A): R;
+  >(path: (P | (string & {})) | [P | (string & {})] | [P | (string & {}), P2 | (string & {})], ...args: A): R;
 
   /**
    * `t` function on the `I4n` class.
