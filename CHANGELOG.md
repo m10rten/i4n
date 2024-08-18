@@ -1,5 +1,11 @@
 # i4n
 
+## 0.3.3
+
+### Patch Changes
+
+- e0f1af1: Update package.json order to work on react/next
+
 ## 0.3.2
 
 ### Patch Changes
