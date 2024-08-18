@@ -29,7 +29,7 @@ npm install i4n
   - [`switch`](#switch)
   - [Templates](#templates)
 - [`I4nException`](#i4nexception)
-<!-- - [Examples](#examples) -->
+- [Examples](#examples)
 
 ## Usage
 
@@ -237,14 +237,16 @@ The same error is thrown when (also forced) switching to a language that is not 
 
 These errors will need to be catched if you need to force some functionality, but this is strongly discouraged because it may break any end-user experience.
 
-<!-- ## Examples
+## Examples
 
 To showcase the `i4n` package, there have been made several examples.
 
 The following examples are present in this repository:
 
-- [**Nextjs.org**](https://nextjs.org/) - [examples/i4n-next](../examples/i4n-next/README.md)
-- [**Hono.dev**](https://hono.dev/) - [examples/i4n-hono](../examples/i4n-hono/README.md) -->
+<!-- - [**Nextjs.org**](https://nextjs.org/) - [examples/i4n-next](../examples/i4n-next/README.md) -->
+<!-- - [**Hono.dev**](https://hono.dev/) - [examples/i4n-hono](../examples/i4n-hono/README.md) -->
+
+- [**React.dev**](https://react.dev/) - [examples/i4n-react](../examples/i4n-react/README.md)
 
 <hr />
 
