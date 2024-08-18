@@ -19,6 +19,7 @@
     "noImplicitAny": true,
     "noUncheckedIndexedAccess": true,
     "allowUnreachableCode": false
+    // "removeComments": true
   },
   "exclude": ["node_modules", "dist"]
 }
