@@ -9,7 +9,7 @@
   "homepage": "https://github.com/m10rten/i4n#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/m10rten/i4n/"
+    "url": "https://github.com/m10rten/i4n.git"
   },
   "bugs": {
     "url": "https://github.com/m10rten/i4n/issues"
@@ -31,7 +31,16 @@
     "change": "changeset",
     "prepare": "husky"
   },
-  "keywords": [],
+  "type": "commonjs",
+  "keywords": [
+    "translations",
+    "lightweight",
+    "typescript",
+    "i4n",
+    "internationalisation",
+    "translate",
+    "simple-to-use"
+  ],
   "author": "m10rten",
   "license": "MIT",
   "devDependencies": {
