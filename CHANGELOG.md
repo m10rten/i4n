@@ -1,5 +1,11 @@
 # i4n
 
+## 0.3.0
+
+### Minor Changes
+
+- 1f78cae: Added support for fallback keys and fallback language
+
 ## 0.2.1
 
 ### Patch Changes
