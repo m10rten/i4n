@@ -30,55 +30,14 @@ Then create a set of translations:
 const translations = {
   en: {
     hi: "Hello",
-    earth: "World",
-    what: {
-      happened: "What happened?",
-    },
   },
   es: {
     hi: "Ola",
-    earth: "Mundo",
-    what: {
-      happened: "¿Qué pasó?",
-    },
   },
 } as const;
 ```
 
-> This package will not validate this structure or types inbetween translations(!), but having an object with languages is required for this module to work.
-
-This will **not** work:
-
-```ts
-// BAD:
-const translations = {
-  hi: "Hello",
-  earth: "World",
-  what: {
-    happened: "What happened?",
-  },
-} as const;
-```
-
-> ⚠️ Warning:
-> Watch out when making bulk translations, in that case be sure to type it yourself as this may cause the `i4n` package to not work as intended or expected.
-
-For example:
-
-```ts
-const translations = {
-  en: {
-    earth: "World",
-  },
-  es: {
-    aerth: "Mundo",
-  },
-} as const;
-```
-
-This does not raise typescript errors because it is a valid object.
-
-To overcome this, implement your own types:
+To improve this, implement your own types:
 
 ```ts
 type TranslationData = {
@@ -106,118 +65,59 @@ Then initialize the class with your translations and default language:
 const i4n = new I4n({ translations, language: "en", fallbackLanguage: "fr" });
 ```
 
-- **translations**: the translations you just created having `hi`, `earth`, `what.happened` in it.
+- **translations**: the translations you just created.
 - **language**: the default language the translation function will start with.
 - **fallbackLanguage**: the language it should fall back to.
 
-## Functions
+## API
 
-To use it there are 2 functions: `t` and `switch`.
-
-### `t`
-
-The `t` function allows you to call your translations with a `dot.notation` so you may get nested fields.
+### I4n Constructor
 
 ```ts
-console.log(i4n.t("hi")); // "Hello"
+new I4n(config: {
+  translations: Record<string, any>;
+  language: string;
+  fallbackLanguage?: string;
+});
 ```
 
-Calling the `t` method for just an object (not the nested key), will result in the object being returned.
+- **translations**: An object containing the translation data, organized by language codes.
+- **language**: The default language to use.
+- **fallbackLanguage**: (Optional) The language to fall back to if a translation is missing.
+
+### Methods
+
+#### `t(key: string | string[], ...args: any[])`
+
+Retrieves a translation value based on the provided key. Supports dot notation for nested keys and fallback keys.
+
+- **key**: The translation key or array of keys for fallback.
+- **args**: Additional arguments for template functions.
+
+**Usage Example:**
 
 ```ts
-console.log(i4n.t("what")); // { happened: "What happened?" }
+i4n.t("hi"); // Returns "Hello"
+i4n.t([`errors.${code}`, "errors.unspecified"]); // Fallback example
 ```
 
-#### Fallback keys
+#### `switch(language: string)`
 
-When using `i4n` with an API, you might have different translations for different error codes, but you do not want to type out all the HTTP error codes in your translations. Introducing: fallbacks.
+Switches the current language at runtime.
 
-With fallbacks, you can give a second key that should be used instead if the first key does not return a value.
+- **language**: The language code to switch to.
 
-This looks like this:
-
-```ts
-const translations = {
-  en: {
-    errors: {
-      "404": "Not found error",
-      "500": "Server error",
-      unspecified: "unspecified",
-    },
-  },
-};
-const i4n = new I4n({ translations, language });
-
-// your api call for example ...
-// you get an error code from the `fetch`, e.g:  code: 401
-const text = i4n.t([`errors.${code}`, "errors.unspecified"]); // "unspecified"
-```
-
-This will make development easier for not having to check if you have all the expected translations present.
-
-#### Fallback Language
-
-You might forget to translate something, this config option makes sure you will have a language to fall back to.
-
-```ts
-// ... translations
-const i4n = new I4n({ fallbackLanguage: "en" });
-i4n.switch("es");
-
-i4n.t("say-hi"); // does not exist in 'es' -> "Hello" from 'en'
-```
-
-### `switch`
-
-The `switch` method enables the application to switch languages at runtime, making it very useful for web translations.
+**Usage Example:**
 
 ```ts
 i4n.switch("es");
-
-console.log(i4n.t("hi")); // "Ola"
+i4n.t("hi"); // Returns "Ola"
 ```
 
-### Templates
+### Error Handling
 
-When working with `i4n`, you might find that you want to modify the output.
+- **I4nException**: Thrown if invalid types are used or if a language not present in the translations is selected.
 
-With templates, there are a few small steps required to get started:
+## Docs
 
-**Step 1**: Edit your translations to include a template function.
-
-This can be any function, I chose for it to look like this:
-
-```ts
-const translations: TranslationSet = {
-  en: {
-    sayHiTo: (name: string) => `Hello ${name}`,
-  },
-  es: {
-    sayHiTo: (name: string) => `Ola ${name}`,
-  },
-};
-```
-
-**Step 2**: Call your new template with custom parameters.
-
-You will then call the function `t` the same way, but with the parameters you defined:
-
-```ts
-i4n.t("sayHiTo", "John"); // "Hello John"
-```
-
-> 💡 As mentioned, this works with the parameters **you** defined. Objects and custom classes will also work!
-
-This may seem small, but this is fully typed, making it very easy to define and use your templates in your code.
-
-## `I4nException`
-
-When using this package, be sure not to force types.
-
-The `translations` prop in the `I4n` class can only accept objects, no `Map`, `Set` or `Array`.
-
-In that case, the module will throw a `I4nException` error.
-
-The same error is thrown when (also forced) switching to a language that is not in the translations.
-
-These errors will need to be catched if you need to force some functionality, but this is strongly discouraged because it may break any end-user experience.
+For more and more in depth documentation, go to: [github.com/m10rten/i4n](https://github.com/m10rten/i4n#readme).
