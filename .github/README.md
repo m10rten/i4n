@@ -100,7 +100,9 @@ type TranslationData = {
   earth: string;
 };
 type Language = "en" | "es" | "fr";
-type TranslationSet = Record<Language, TranslationData>;
+type TranslationSet = {
+  [lang in Language]?: LanguageData;
+};
 
 const translations: TranslationSet = {
   en: {

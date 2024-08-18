@@ -6,34 +6,36 @@ import "./App.css";
 interface LanguageData {
   hello: string;
 }
-type Language = "en" | "nl";
+type Language = "en" | "es";
 type TranslationSet = {
   [lang in Language]?: LanguageData;
 };
-
 const translations = {
   en: {
-    hello: "Hello World!",
+    hello: "Hello!",
   },
-  nl: {
-    hello: "Hallo Wereld!",
+  es: {
+    hello: "Ola!",
   },
 } satisfies TranslationSet;
-
-const i4n = new I4n({ translations, language: "en", fallbackLanguage: "en" });
+const i4n = new I4n({
+  translations,
+  language: "en",
+  fallbackLanguage: "en",
+});
 
 function App() {
   const [lang, setLang] = useState<Language>("en");
 
   const toggleLanguage = () => {
-    const newLang = lang === "en" ? "nl" : "en";
+    const newLang = lang === "en" ? "es" : "en";
     setLang(newLang);
     i4n.switch(newLang);
   };
 
   return (
     <div>
-      <button onClick={toggleLanguage}>Switch to {lang === "en" ? "Dutch" : "English"}</button>
+      <button onClick={toggleLanguage}>Switch to {lang === "en" ? "Espanol" : "English"}</button>
       <hr />
       <p>{i4n.t("hello")}</p>
     </div>
