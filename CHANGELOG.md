@@ -1,5 +1,11 @@
 # i4n
 
+## 0.4.1
+
+### Patch Changes
+
+- 10351a6: Fixed bug where the loader would cause an exception when key does not exist
+
 ## 0.4.0
 
 ### Minor Changes
