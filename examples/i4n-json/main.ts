@@ -11,16 +11,22 @@ type TranslationSet = {
 
 const jsonLoader = async () => await import("./translations.json");
 
-const i4n = new I4n<TranslationSet, Language>({
+const i4n = new I4n<TranslationSet>({
   language: "en",
   fallbackLanguage: "en",
   loader: jsonLoader,
 });
 
-console.log(i4n.t("hello")); // "Hello"
+const main = async () => {
+  await i4n.loaded();
 
-console.log("Swapping", i4n.switch("nl"));
+  console.log(i4n.t("hello")); // "Hello"
 
-console.log(i4n.t("hello"));
+  console.log("Swapping", i4n.switch("nl"));
 
-console.log(i4n.t("key"));
+  console.log(i4n.t("hello")); // "Hallo"
+
+  console.log(i4n.t("key")); // undefined;
+};
+
+main();

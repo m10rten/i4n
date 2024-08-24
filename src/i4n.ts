@@ -125,6 +125,7 @@ export class I4n<T extends Record<string, unknown>, L extends keyof T & string =
    * @returns a string from the translations, a function or object, or the result of a function.
    */
   public t(path: (string & {}) | [string & {}] | [string & {}, string & {}], ...args: unknown[]): unknown {
+    if (!this._data) return undefined;
     const result = this._lookup(path);
 
     if (typeof result === "function" && args.length !== 0) return result(...args);

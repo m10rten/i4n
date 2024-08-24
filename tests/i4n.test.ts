@@ -46,6 +46,7 @@ const testTranslations: TranslationSet = {
 const testDefaultLanguage = "en" satisfies keyof typeof testTranslations;
 
 const testJsonLoader = async () => testTranslations;
+const testEmptyLoader = async () => ({}) as typeof testTranslations;
 
 describe("I4n", () => {
   let i4n: I4n<TranslationSet, typeof testDefaultLanguage>;
@@ -166,5 +167,13 @@ describe("I4n", () => {
     await i4n.loaded();
     expect(i4n.ready).toBe(true);
     expect(i4n.t("earth")).toBe(testTranslations["en"]?.earth);
+  });
+
+  test("If the t function returns undefined if the data is undefined from the loader", async () => {
+    const i4n = new I4n<typeof testTranslations>({ language: "en", loader: testEmptyLoader });
+    expect(i4n.ready).toBe(false);
+    await i4n.loaded();
+    expect(i4n.ready).toBe(true);
+    expect(i4n.t("earth")).toBe(undefined);
   });
 });
