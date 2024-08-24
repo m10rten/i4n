@@ -2,10 +2,19 @@
 import { I4nException } from "./errors";
 import type { Path, Value } from "./types";
 
-export interface I4nConfig<T, L extends keyof T & string> {
+export type I4nConfig<T, L extends keyof T & string> = {
   language: L;
   fallbackLanguage?: string | undefined | null;
-}
+} & (
+  | {
+      translations: T;
+      loader?: never;
+    }
+  | {
+      translations?: never;
+      loader: (() => Promise<T> | (T & Record<string, unknown>)) | undefined;
+    }
+);
 
 /**
  * @prop {translations} - the data required for the translation module to return text.
@@ -34,23 +43,57 @@ export interface I4nConfig<T, L extends keyof T & string> {
  * const text = i4n.t("hi"); // "Hello"
  * ```
  */
-export class I4n<T extends Record<string, unknown>, L extends keyof T & string> {
-  private _data: T;
-  private config: I4nConfig<T, L>;
-  public constructor(config: { translations: T; language: L; fallbackLanguage?: string | undefined | null }) {
+export class I4n<T extends Record<string, unknown>, L extends keyof T & string = string> {
+  // private _jsonLoaded: boolean = false;
+  private _data: T = undefined as unknown as T;
+  private _config: I4nConfig<T, L>;
+  public constructor(config: I4nConfig<T, L>) {
+    if (!config?.loader && !config?.translations)
+      throw new I4nException({
+        message: "Expected `loader` or `translations` but found neither.",
+        type: "invalid-translations",
+      });
     if (config.translations instanceof Set || config.translations instanceof Map || Array.isArray(config.translations))
       throw new I4nException({
         type: "invalid-translations",
         message: "Array, Set or Map cannot be used as translations require keys",
       });
-    this._data = config.translations;
-    this.config = {
+    if (config.translations) {
+      this._data = config.translations;
+    }
+    this._config = {
       language: config.language,
       fallbackLanguage: config.fallbackLanguage,
-    };
+      ...(config?.loader !== undefined && !config.translations ? { loader: config?.loader } : {}),
+      ...(config?.translations && !config.loader ? { translations: config?.translations } : {}),
+    } as I4nConfig<T, L>;
+
+    if (!config?.translations && !!config?.loader) {
+      console.info("starting loader");
+      this._startLoader();
+    }
 
     this.t = this.t.bind(this);
     this.switch = this.switch.bind(this);
+  }
+
+  private async _startLoader() {
+    try {
+      if (this._config?.loader === undefined) {
+        console.debug("return early");
+        return;
+      }
+      const data = await this._config?.loader();
+      this._data = data as T;
+      console.info("done loading");
+      // this._jsonLoaded = true;
+    } catch (error: unknown) {
+      if (error instanceof Error && !(error instanceof I4nException)) {
+        throw new I4nException({ error });
+      } else {
+        throw new I4nException();
+      }
+    }
   }
 
   /**
@@ -86,28 +129,32 @@ export class I4n<T extends Record<string, unknown>, L extends keyof T & string> 
 
     if (typeof result === "function" && args.length !== 0) return result(...args);
 
-    const fbl = this.config.fallbackLanguage;
+    const fbl = this._config.fallbackLanguage;
     const hasFallbackLang = fbl !== null && fbl !== undefined;
 
-    const returned = result ?? (hasFallbackLang ? this._lookup(path, this.config.fallbackLanguage) : undefined);
+    const returned = result ?? (hasFallbackLang ? this._lookup(path, this._config.fallbackLanguage) : undefined);
 
     return returned;
   }
 
   public get active(): string {
-    return this.config.language;
+    return this._config.language;
   }
 
   public get languages(): Array<keyof typeof this._data> {
+    if (!this._data) throw new I4nException();
     return Object.keys(this._data);
   }
 
   private _lookup(
     path: string | undefined | [string] | [string, string],
-    language: string | null | undefined = this.config.language,
+    language: string | null | undefined = this._config.language,
   ): any {
     if (path === undefined) return undefined;
-    language ??= this.config.language;
+    language ??= this._config.language;
+
+    if (!this._data) return undefined;
+
     const key = Array.isArray(path) ? path[0] : path;
     let hasFallbackKey = false;
 
@@ -130,6 +177,29 @@ export class I4n<T extends Record<string, unknown>, L extends keyof T & string> 
     return result ?? (fallbackKey ? this._lookup(fallbackKey) : undefined);
   }
 
+  public get ready(): boolean {
+    return this._data !== undefined;
+  }
+
+  public async loaded(interval: number = 50, signal?: AbortSignal) {
+    if (signal?.aborted) return;
+    if (!this._config?.loader) return;
+
+    return new Promise((resolve, reject) => {
+      const checker = setInterval(() => {
+        if (signal?.aborted) {
+          clearInterval(checker);
+          return reject(false);
+        }
+
+        if (this._data) {
+          clearInterval(checker);
+          return resolve(true);
+        }
+      }, interval);
+    });
+  }
+
   /**
    * Switch languages in the translations and get different language output.
    * @param language language to switch to
@@ -139,7 +209,7 @@ export class I4n<T extends Record<string, unknown>, L extends keyof T & string> 
     if (!language) throw new I4nException({ type: "invalid-language", message: "Language cannot be empty." });
     if (!this._data[language])
       throw new I4nException({ type: "invalid-language", message: "Language is not in the translations" });
-    this.config.language = language as L;
+    this._config.language = language as L;
   }
 }
 

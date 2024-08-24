@@ -28,8 +28,17 @@ npm install i4n
     - [Fallback language](#fallback-language)
   - [`switch`](#switch)
   - [Templates](#templates)
+  - [Loader](#loader)
 - [`I4nException`](#i4nexception)
 - [Examples](#examples)
+
+## Features
+
+- `t` typed function for getting translations
+- `switch` to change the language the `t` function uses.
+- fallback keys and fallback language
+- templates for easy control
+- custom data loader (for eg. JSON files)
 
 ## Usage
 
@@ -227,6 +236,43 @@ i4n.t("sayHiTo", "John"); // "Hello John"
 
 This may seem small, but this is fully typed, making it very easy to define and use your templates in your code.
 
+### Loader
+
+To use json files, it is recommended to use a custom `loader`.
+
+```ts
+async function myJsonLoader(): Promise<TranslationSet> {
+  return await import("./file-to-translations.json");
+}
+
+const i4n = new I4n<TranslationSet>({
+  loader: myJsonLoader,
+});
+```
+
+The types you pass in the `I4n` class should be the same as the loader.
+
+> 💡 Since you cannot ensure type safety on JSON files, it is recommended to use a tool like [zod](https://zod.dev/) to ensure type safety.
+
+#### `.loaded`
+
+You can then wait for the data to be loaded using the `.loaded` function:
+
+```ts
+await i4n.loaded();
+```
+
+#### `.ready`
+
+When you do not wish to block the process, you can check with the .ready if the loader has completed and the translations can be accessed.
+
+```ts
+const i4n = new I4n({...}); // with loader;
+
+// later in the program:
+i4n.ready;// boolean;
+```
+
 ## `I4nException`
 
 When using this package, be sure not to force types.
@@ -249,6 +295,8 @@ The following examples are present in this repository:
 <!-- - [**Hono.dev**](https://hono.dev/) - [examples/i4n-hono](../examples/i4n-hono/README.md) -->
 
 - [**React.dev**](https://react.dev/) - [examples/i4n-react](../examples/i4n-react/README.md)
+- [**Node.js**](https://nodejs.org/) - [examples/i4n-node](../examples/i4n-node/README.md)
+- **JSON** - [examples/i4n-json](../examples/i4n-json/README.md)
 
 <hr />
 

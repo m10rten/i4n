@@ -45,6 +45,8 @@ const testTranslations: TranslationSet = {
 
 const testDefaultLanguage = "en" satisfies keyof typeof testTranslations;
 
+const testJsonLoader = async () => testTranslations;
+
 describe("I4n", () => {
   let i4n: I4n<TranslationSet, typeof testDefaultLanguage>;
   beforeEach(() => {
@@ -150,5 +152,19 @@ describe("I4n", () => {
 
   test("If the list of languages can be get", () => {
     expect(i4n.languages).toEqual(["en", "es"]);
+  });
+
+  test("If the loader can load in any data through lazyloading", async () => {
+    const i4n = new I4n<typeof testTranslations>({ language: "en", loader: testJsonLoader });
+    await i4n.loaded();
+    expect(i4n.t("earth")).toBe(testTranslations["en"]?.earth);
+  });
+
+  test("If the ready state is good before and after the loader", async () => {
+    const i4n = new I4n<typeof testTranslations>({ language: "en", loader: testJsonLoader });
+    expect(i4n.ready).toBe(false);
+    await i4n.loaded();
+    expect(i4n.ready).toBe(true);
+    expect(i4n.t("earth")).toBe(testTranslations["en"]?.earth);
   });
 });
