@@ -1,5 +1,11 @@
 # i4n
 
+## 0.4.0
+
+### Minor Changes
+
+- 1ed5609: Allow for custom data loader to be used to get translations.
+
 ## 0.3.4
 
 ### Patch Changes
