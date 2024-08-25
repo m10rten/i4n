@@ -1,5 +1,11 @@
 # i4n
 
+## 0.5.1
+
+### Patch Changes
+
+- 57c766f: Updated types to allow string to be put in loaded and switch
+
 ## 0.5.0
 
 ### Minor Changes
