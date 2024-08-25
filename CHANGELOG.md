@@ -1,5 +1,11 @@
 # i4n
 
+## 0.5.0
+
+### Minor Changes
+
+- ec9dd78: Made lazy loadig possible after the initialization of the `I4n` class. Updated docs accordingly and updated NPM-readme with more high-level details.
+
 ## 0.4.1
 
 ### Patch Changes
