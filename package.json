@@ -1,6 +1,6 @@
 {
   "name": "i4n",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Lightweight, Zero dependencies, Typesafe and Simple to use translations for TypeScript.",
   "private": false,
   "types": "./dist/index.d.ts",
