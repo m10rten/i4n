@@ -185,7 +185,12 @@ export class I4n<T extends Record<string, unknown>, L extends keyof T & string =
     return this._loading === false || this._data !== undefined;
   }
 
-  public async loaded(options?: { interval?: number; signal?: AbortSignal; key?: string | undefined; lang?: L }) {
+  public async loaded(options?: {
+    interval?: number;
+    signal?: AbortSignal;
+    key?: string | undefined;
+    lang?: L | (string & {});
+  }) {
     const _options = { interval: 50, ...options };
     if (_options.signal?.aborted) return;
 
@@ -223,7 +228,7 @@ export class I4n<T extends Record<string, unknown>, L extends keyof T & string =
     | {
         data?: never;
         lang?: never;
-        loader?: undefined | (() => Record<string, unknown> | Promise<Record<string, unknown>>);
+        loader?: undefined | (() => T[L] | Promise<T[L]> | Record<string, unknown> | Promise<Record<string, unknown>>);
       }) {
     if (data && loader)
       throw new I4nException({
@@ -247,7 +252,7 @@ export class I4n<T extends Record<string, unknown>, L extends keyof T & string =
    * @param language language to switch to
    * @returns {void} - nothing.
    */
-  public switch(language: keyof T): void {
+  public switch(language: keyof T | (string & {})): void {
     if (!language) throw new I4nException({ type: "invalid-language", message: "Language cannot be empty." });
     if (!this._data[language])
       throw new I4nException({ type: "invalid-language", message: "Language is not in the translations" });

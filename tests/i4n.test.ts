@@ -13,9 +13,12 @@ type TranslationData = {
 
   object_template: ({ type, count }: { type: string; count: number }) => string;
 };
-type TranslationSet = Record<string, TranslationData>;
+type Language = "fr" | "en" | "es";
 
-const testTranslations: TranslationSet = {
+type TranslationSet = {
+  [lang in Language]?: TranslationData;
+};
+const testTranslations = {
   en: {
     earth: "world",
 
@@ -41,7 +44,7 @@ const testTranslations: TranslationSet = {
 
     object_template: ({ type, count }) => `[${type}]: a ${count}`,
   },
-};
+} satisfies TranslationSet;
 
 const testDefaultLanguage = "en" satisfies keyof typeof testTranslations;
 
@@ -54,7 +57,7 @@ const testAnotherLoader = async () => ({
 });
 
 describe("I4n", () => {
-  let i4n: I4n<TranslationSet, typeof testDefaultLanguage>;
+  let i4n: I4n<typeof testTranslations, typeof testDefaultLanguage>;
   beforeEach(() => {
     i4n = new I4n({
       translations: testTranslations,
@@ -215,9 +218,8 @@ describe("I4n", () => {
   });
 
   test("If the lazy loading works with just data and no loader", () => {
-    const i4n = new I4n<typeof testTranslations>({ language: "en", translations: {} });
+    const i4n = new I4n<TranslationSet>({ language: "en", translations: {} });
     expect(i4n.t("earth")).toBe(undefined);
-
     i4n.lazy({
       data: {
         ...testTranslations["en"],
@@ -229,7 +231,7 @@ describe("I4n", () => {
   });
 
   test("If the lazy loading throws when no data and loader is passed, and when both are passed", () => {
-    const i4n = new I4n<typeof testTranslations>({ language: "en", translations: {} });
+    const i4n = new I4n<TranslationSet>({ language: "en", translations: {} });
     try {
       i4n.lazy({ data: testTranslations as any, loader: testJsonLoader as any });
     } catch (error) {
