@@ -47,6 +47,11 @@ const testDefaultLanguage = "en" satisfies keyof typeof testTranslations;
 
 const testJsonLoader = async () => testTranslations;
 const testEmptyLoader = async () => ({}) as typeof testTranslations;
+const testAnotherLoader = async () => ({
+  fr: {
+    earth: "Terre",
+  },
+});
 
 describe("I4n", () => {
   let i4n: I4n<TranslationSet, typeof testDefaultLanguage>;
@@ -175,5 +180,66 @@ describe("I4n", () => {
     await i4n.loaded();
     expect(i4n.ready).toBe(true);
     expect(i4n.t("earth")).toBe(undefined);
+  });
+
+  test("If the t function will return an undefined when not loaded", async () => {
+    const i4n = new I4n<typeof testTranslations>({ language: "en", loader: testJsonLoader });
+    expect(i4n.ready).toBe(false);
+    expect(i4n.t("earth")).toBe(undefined);
+    await i4n.loaded();
+    expect(i4n.ready).toBe(true);
+    expect(i4n.t("earth")).toBe(testTranslations["en"]?.earth);
+  });
+
+  test("If the late lazy loading works after init", async () => {
+    const i4n = new I4n<typeof testTranslations>({ language: "en", loader: testJsonLoader });
+    await i4n.loaded();
+
+    i4n.lazy({ loader: testAnotherLoader });
+    await i4n.loaded({ lang: "fr" });
+    expect(i4n.languages).toContain("fr");
+
+    i4n.switch("fr");
+    expect(i4n.t("earth")).toBe("Terre");
+  });
+
+  test("If the late lazy loading still makes the existing keys work", async () => {
+    const i4n = new I4n<typeof testTranslations>({ language: "en", loader: testJsonLoader });
+    await i4n.loaded();
+
+    i4n.lazy({ loader: testAnotherLoader });
+    await i4n.loaded({ lang: "fr" });
+
+    i4n.switch("en");
+    expect(i4n.t("earth")).toBe(testTranslations["en"]?.earth);
+  });
+
+  test("If the lazy loading works with just data and no loader", () => {
+    const i4n = new I4n<typeof testTranslations>({ language: "en", translations: {} });
+    expect(i4n.t("earth")).toBe(undefined);
+
+    i4n.lazy({
+      data: {
+        ...testTranslations["en"],
+      },
+      lang: "en",
+    });
+
+    expect(i4n.t("earth")).toBe(testTranslations["en"]?.earth);
+  });
+
+  test("If the lazy loading throws when no data and loader is passed, and when both are passed", () => {
+    const i4n = new I4n<typeof testTranslations>({ language: "en", translations: {} });
+    try {
+      i4n.lazy({ data: testTranslations as any, loader: testJsonLoader as any });
+    } catch (error) {
+      expect(error).toBeInstanceOf(I4nException);
+    }
+
+    try {
+      i4n.lazy({});
+    } catch (error) {
+      expect(error).toBeInstanceOf(I4nException);
+    }
   });
 });

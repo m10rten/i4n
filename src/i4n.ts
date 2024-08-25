@@ -44,7 +44,7 @@ export type I4nConfig<T, L extends keyof T & string> = {
  * ```
  */
 export class I4n<T extends Record<string, unknown>, L extends keyof T & string = string> {
-  // private _jsonLoaded: boolean = false;
+  private _loading: boolean = false;
   private _data: T = undefined as unknown as T;
   private _config: I4nConfig<T, L>;
   public constructor(config: I4nConfig<T, L>) {
@@ -69,24 +69,27 @@ export class I4n<T extends Record<string, unknown>, L extends keyof T & string =
     } as I4nConfig<T, L>;
 
     if (!config?.translations && !!config?.loader) {
-      console.info("starting loader");
-      this._startLoader();
+      this._startLoader(config?.loader);
     }
 
     this.t = this.t.bind(this);
     this.switch = this.switch.bind(this);
   }
 
-  private async _startLoader() {
+  private async _startLoader(loader?: undefined | (() => unknown), merge?: boolean | undefined) {
     try {
-      if (this._config?.loader === undefined) {
-        console.debug("return early");
+      if (loader === undefined) {
         return;
       }
-      const data = await this._config?.loader();
-      this._data = data as T;
-      console.info("done loading");
-      // this._jsonLoaded = true;
+      this._loading = true;
+      const data = await loader();
+      this._loading = false;
+
+      if (merge) {
+        this._data = { ...this._data, ...(data as T) };
+      } else {
+        this._data = data as T;
+      }
     } catch (error: unknown) {
       if (error instanceof Error && !(error instanceof I4nException)) {
         throw new I4nException({ error });
@@ -179,26 +182,64 @@ export class I4n<T extends Record<string, unknown>, L extends keyof T & string =
   }
 
   public get ready(): boolean {
-    return this._data !== undefined;
+    return this._loading === false || this._data !== undefined;
   }
 
-  public async loaded(interval: number = 50, signal?: AbortSignal) {
-    if (signal?.aborted) return;
-    if (!this._config?.loader) return;
+  public async loaded(options?: { interval?: number; signal?: AbortSignal; key?: string | undefined; lang?: L }) {
+    const _options = { interval: 50, ...options };
+    if (_options.signal?.aborted) return;
+
+    const check = () => {
+      return (
+        this._loading === false &&
+        (_options?.key ? this._lookup(_options?.key, options?.lang) : this._data) !== undefined
+      );
+    };
 
     return new Promise((resolve, reject) => {
       const checker = setInterval(() => {
-        if (signal?.aborted) {
+        if (_options.signal?.aborted) {
           clearInterval(checker);
           return reject(false);
         }
-
-        if (this._data) {
+        if (check()) {
           clearInterval(checker);
           return resolve(true);
         }
-      }, interval);
+      }, _options.interval);
     });
+  }
+
+  public lazy({
+    loader,
+    data,
+    lang,
+  }:
+    | {
+        loader?: never;
+        data?: Record<string, unknown>;
+        lang?: string;
+      }
+    | {
+        data?: never;
+        lang?: never;
+        loader?: undefined | (() => Record<string, unknown> | Promise<Record<string, unknown>>);
+      }) {
+    if (data && loader)
+      throw new I4nException({
+        type: "invalid-translations",
+        message: "`data` or `loader` were both set while lazy loading, pick one to continue",
+      });
+    if (!data && !loader)
+      throw new I4nException({
+        type: "invalid-translations",
+        message: "`data` or `loader` was not set while lazy loading, pick either to start lazy loading",
+      });
+    if (lang && data) this._data = { ...this._data, ...{ [lang]: data } };
+    if (!lang && data) this._data = { ...this._data, ...data };
+    if (loader !== undefined) {
+      this._startLoader(loader, true);
+    }
   }
 
   /**

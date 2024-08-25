@@ -23,10 +23,11 @@ npm install i4n
 - [Usage](#usage)
 - [Init](#init)
 - [Functions](#functions)
-  - [`t`](#t)
+  - [`t`](#tkey-string--string-args-any)
     - [Fallback keys](#fallback-keys)
     - [Fallback language](#fallback-language)
-  - [`switch`](#switch)
+  - [`switch`](#switchanguage-string)
+  - [`lazy`](#lazydata-recordstring-any-loader---promiserecordstring-any--recordstring-any)
   - [Templates](#templates)
   - [Loader](#loader)
 - [`I4nException`](#i4nexception)
@@ -34,10 +35,11 @@ npm install i4n
 
 ## Features
 
-- `t` typed function for getting translations
+- `t` typed function for getting translations.
 - `switch` to change the language the `t` function uses.
-- fallback keys and fallback language
-- templates for easy control
+- `lazy` to load data and use it in the `t` function after loading.
+- fallback keys and fallback language.
+- templates for easy control.
 - custom data loader (for eg. JSON files)
 
 ## Usage
@@ -129,18 +131,35 @@ const translations: TranslationSet = {
 Then initialize the class with your translations and default language:
 
 ```ts
-const i4n = new I4n({ translations, language: "en", fallbackLanguage: "fr" });
+const i4n = new I4n({ ... });
+
+i4n.t;
+i4n.switch;
 ```
 
-- **translations**: the translations you just created having `hi`, `earth`, `what.happened` in it.
-- **language**: the default language the translation function will start with.
-- **fallbackLanguage**: the language it should fall back to.
+### I4n Constructor
+
+```ts
+new I4n(config: {
+  translations?: Record<string, any>;
+  loader?: Promise<Record<string, any>> | Record<string, any>;
+  language: string;
+  fallbackLanguage?: string;
+});
+```
+
+- **translations**: An object containing the translation data, organized by language codes.
+- **language**: The default language to use.
+- **fallbackLanguage**: (Optional) The language to fall back to if a translation is missing.
+- **loader**: A loader to, for example, load json data from a `.json` file.
+
+> The types are configured to have the `translations` or `loader` present in the arguments, leaving both out or putting both in will result in an `I4nException`.
 
 ## Functions
 
-To use it there are 2 functions: `t` and `switch`.
+To use it there are 3 functions: `t`, `switch` and `lazy`.
 
-### `t`
+### `t(key: string | string[], ...args: any[])`
 
 The `t` function allows you to call your translations with a `dot.notation` so you may get nested fields.
 
@@ -193,7 +212,7 @@ i4n.switch("es");
 i4n.t("say-hi"); // does not exist in 'es' -> "Hello" from 'en'
 ```
 
-### `switch`
+### `switch(;anguage: string)`
 
 The `switch` method enables the application to switch languages at runtime, making it very useful for web translations.
 
@@ -201,6 +220,25 @@ The `switch` method enables the application to switch languages at runtime, maki
 i4n.switch("es");
 
 console.log(i4n.t("hi")); // "Ola"
+```
+
+### `lazy({data?: Record<string, any>, loader?: () => Promise<Record<string, any>> | Record<string, any>})`
+
+Enables the user to load in translations after initialization of the `I4n` class.
+
+```ts
+const i4n = new I4n({...}); // {en, es}
+i4n.ready; // true
+
+i4n.t("french-key"); // undefined
+
+i4n.lazy({ loader: myCustomLoader }); // {fr}
+i4n.ready; // false
+
+await i4n.loaded({lang: "fr"})
+i4n.ready; //true
+
+i4n.t("french-key"); // "mon-key".
 ```
 
 ### Templates

@@ -73,7 +73,8 @@ You will then have access to the methods, can detach the functions and start tra
 
 ```ts
 new I4n(config: {
-  translations: Record<string, any>;
+  translations?: Record<string, any>;
+  loader?: () => Promise<Record<string, any>> | Record<string, any>;
   language: string;
   fallbackLanguage?: string;
 });
@@ -82,6 +83,9 @@ new I4n(config: {
 - **translations**: An object containing the translation data, organized by language codes.
 - **language**: The default language to use.
 - **fallbackLanguage**: (Optional) The language to fall back to if a translation is missing.
+- **loader**: A loader to, for example, load json data from a `.json` file.
+
+> The types are configured to have the `translations` or `loader` present in the arguments, leaving both out or putting both in will result in an `I4nException`.
 
 ### Methods
 
@@ -112,6 +116,25 @@ Switches the current language at runtime.
 ```ts
 i4n.switch("es");
 i4n.t("hi"); // Returns "Ola"
+```
+
+#### `lazy({data?: Record<string, any>, loader?: () => Promise<Record<string, any>> | Record<string, any>})`
+
+Enables the user to load in translations after initialization of the `I4n` class.
+
+```ts
+const i4n = new I4n({...}); // {en, es}
+i4n.ready; // true
+
+i4n.t("french-key"); // undefined
+
+i4n.lazy({ loader: myCustomLoader }); // {fr}
+i4n.ready; // false
+
+await i4n.loaded({lang: "fr"})
+i4n.ready; //true
+
+i4n.t("french-key"); // "mon-key".
 ```
 
 ### Error Handling
