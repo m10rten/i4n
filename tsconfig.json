@@ -2,6 +2,8 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "display": "Default",
   "compilerOptions": {
+    "module": "esnext",
+    "target": "esnext",
     "composite": false,
     "declaration": true,
     "declarationMap": true,

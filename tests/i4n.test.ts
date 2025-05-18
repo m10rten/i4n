@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import I4n, { I4nException } from "../src";
+import I4n, { I4nException } from "../src/index.js";
 
 type TranslationData = {
   earth: string;
@@ -49,7 +49,7 @@ const testTranslations = {
 const testDefaultLanguage = "en" satisfies keyof typeof testTranslations;
 
 const testJsonLoader = async () => testTranslations;
-const testEmptyLoader = async () => ({}) as typeof testTranslations;
+const testEmptyLoader = async () => ({} as typeof testTranslations);
 const testAnotherLoader = async () => ({
   fr: {
     earth: "Terre",

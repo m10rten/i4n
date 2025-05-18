@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { I4nException } from "./errors";
-import type { Path, Value } from "./types";
+import { I4nException } from "./errors.js";
+import type { Path, Value } from "./types.ts";
 
 export type I4nConfig<T, L extends keyof T & string> = {
   language: L;
