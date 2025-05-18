@@ -1,5 +1,11 @@
 # i4n
 
+## 0.5.2
+
+### Patch Changes
+
+- 0550d5f: Updated dependencies & changed type to module
+
 ## 0.5.1
 
 ### Patch Changes
