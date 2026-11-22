@@ -10,18 +10,5 @@
   "bracketSpacing": true,
   "jsxSingleQuote": false,
   "quoteProps": "as-needed",
-  "endOfLine": "lf",
-  "importOrder": [
-    "^(react/(.*)$)|^(react$)",
-    "^(next/(.*)$)|^(next$)",
-    "<THIRD_PARTY_MODULES>",
-    "",
-    "^types$",
-    "^@/(.*)$",
-    "#/(.*)$",
-    "~/(.*)$",
-    "",
-    "^[./]"
-  ],
-  "plugins": ["@ianvs/prettier-plugin-sort-imports"]
+  "endOfLine": "lf"
 }

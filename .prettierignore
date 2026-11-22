@@ -2,3 +2,4 @@ node_modules
 dist
 LICENSE
 lcov-report
+pnpm-lock.yaml

@@ -1,11 +1,9 @@
-name: PR Workflow
+name: ci
 on:
   pull_request:
     branches:
       - main
       - dev
-    paths:
-      - ".github/workflows/main_pr_packages.yaml"
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -16,19 +14,19 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: [22.x, 26.x]
     steps:
       - uses: actions/checkout@v4.1.7
       - uses: pnpm/action-setup@v4.0.0
         with:
-          version: 8
+          version: 12.21.0
       - uses: actions/setup-node@v4.0.3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 26.x
           cache: pnpm
       # install
       - name: Install dependencies 📦
-        run: pnpm i --frozen-lockfile
+        run: pnpm clean-install --frozen-lockfile
       # generate
       - name: Generate deps 🍪
         run: pnpm run generate
@@ -42,6 +40,13 @@ jobs:
       # build
       - name: Build 🏗
         run: pnpm run build
-      # test
+      # test on the matrix node version; pnpm is bypassed because devEngines requires node 26
+      - uses: actions/setup-node@v4.0.3
+        with:
+          node-version: ${{ matrix.node-version }}
       - name: Test 🧪
-        run: pnpm run test
+        run: ./node_modules/.bin/tsx --test "tests/**/*.test.ts"
+      - name: Smoke test dist 💨
+        run: |
+          node --input-type=module -e "import { I4n } from './dist/index.js'; if (typeof I4n !== 'function') process.exit(1)"
+          node -e "if (typeof require('./dist/index.cjs').I4n !== 'function') process.exit(1)"

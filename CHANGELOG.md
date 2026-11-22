@@ -1,5 +1,13 @@
 # i4n
 
+## 0.5.3
+
+### Patch Changes
+
+- Fixed package entry points. 0.5.2 pointed the ESM `import` condition and `module` at `dist/*.mjs` files that were not published, and pointed `require` and `main` at ESM `.js` files. `import "i4n"`, `require("i4n")`, and the `i4n/i4n`, `i4n/errors` and `i4n/types` subpaths now resolve to the ESM `.js` and CJS `.cjs` builds, with matching `.d.ts` and `.d.cts` types.
+- Consumers now need Node >=22 (`engines`). The pnpm engine requirement for consumers was removed.
+- Tooling: tests moved from Jest to node:test, changesets were replaced by tag-triggered publishing with npm trusted publishing (OIDC), and development needs Node 26 and pnpm 12.
+
 ## 0.5.2
 
 ### Patch Changes

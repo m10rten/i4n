@@ -1,0 +1,56 @@
+name: release
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.1.7
+      - uses: pnpm/action-setup@v4.0.0
+        with:
+          version: 12.21.0
+      - uses: actions/setup-node@v4.0.3
+        with:
+          node-version: 26.x
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Verify tag matches package version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version=$(jq -r .version package.json)
+          if [ "${TAG#v}" != "$version" ]; then
+            echo "Tag $TAG does not match package.json version $version"
+            exit 1
+          fi
+
+      # install
+      - run: pnpm install --frozen-lockfile
+        name: Install dependencies
+
+      - name: Generate deps 🍪
+        run: pnpm run generate
+        env:
+          CI: true
+
+      - name: Verify Packages 🧷📦,⚡
+        run: pnpm run precheck
+
+      - name: Check packages and create build 🧪,🔨,
+        run: pnpm run verify
+        env:
+          CI: true
+
+      # publish
+      - name: Publish package
+        run: pnpm publish --no-git-checks --access public

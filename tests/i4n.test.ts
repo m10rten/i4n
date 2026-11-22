@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import assert from "node:assert/strict";
+import { beforeEach, describe, it } from "node:test";
+
 import I4n, { I4nException } from "../src/index.js";
 
 type TranslationData = {
@@ -49,7 +52,7 @@ const testTranslations = {
 const testDefaultLanguage = "en" satisfies keyof typeof testTranslations;
 
 const testJsonLoader = async () => testTranslations;
-const testEmptyLoader = async () => ({} as typeof testTranslations);
+const testEmptyLoader = async () => ({}) as typeof testTranslations;
 const testAnotherLoader = async () => ({
   fr: {
     earth: "Terre",
@@ -65,148 +68,136 @@ describe("I4n", () => {
     });
   });
 
-  test("If basic init works", () => {
+  it("If basic init works", () => {
     i4n = new I4n({
       translations: testTranslations,
       language: testDefaultLanguage,
     });
 
-    expect(i4n).toBeInstanceOf(I4n);
+    assert.ok(i4n instanceof I4n);
   });
 
-  test("If simple retrieval works for single key", () => {
-    expect(i4n.t("earth")).toEqual(testTranslations["en"]?.earth);
+  it("If simple retrieval works for single key", () => {
+    assert.deepStrictEqual(i4n.t("earth"), testTranslations["en"]?.earth);
   });
 
-  test("If nested translations can be retrieved with a dot notation", () => {
-    expect(i4n.t("nested.key")).toEqual(testTranslations["en"]?.nested.key);
+  it("If nested translations can be retrieved with a dot notation", () => {
+    assert.deepStrictEqual(i4n.t("nested.key"), testTranslations["en"]?.nested.key);
   });
 
-  test("If the module throws an error when passing a Set", () => {
-    try {
-      new I4n({ translations: new Set([]) as any, language: "en" });
-    } catch (e) {
-      expect(e).toBeInstanceOf(I4nException);
-    }
+  it("If the module throws an error when passing a Set", () => {
+    assert.throws(() => new I4n({ translations: new Set([]) as any, language: "en" }), I4nException);
   });
 
-  test("If switching the language works", () => {
-    expect(i4n.t("earth")).toBe(testTranslations["en"]?.earth);
+  it("If switching the language works", () => {
+    assert.strictEqual(i4n.t("earth"), testTranslations["en"]?.earth);
 
-    expect(i4n.switch("es")).toBe(void 0);
+    assert.strictEqual(i4n.switch("es"), undefined);
 
-    expect(i4n.t("earth")).toBe(testTranslations["es"]?.earth);
+    assert.strictEqual(i4n.t("earth"), testTranslations["es"]?.earth);
   });
 
-  test("If the module throws when switching to a language that does not exist", () => {
-    try {
-      i4n.switch("not-a-country-code");
-    } catch (e) {
-      expect(e).toBeInstanceOf(I4nException);
-    }
+  it("If the module throws when switching to a language that does not exist", () => {
+    assert.throws(() => i4n.switch("not-a-country-code"), I4nException);
   });
 
-  test("If the module can handle templating with a single string parameter", () => {
-    expect(i4n.t("single_template")).toBeInstanceOf(Function);
+  it("If the module can handle templating with a single string parameter", () => {
+    assert.ok(i4n.t("single_template") instanceof Function);
     const test_data = "john";
-    expect(i4n.t("single_template", test_data)).toBe(testTranslations["en"]?.single_template(test_data));
+    assert.strictEqual(i4n.t("single_template", test_data), testTranslations["en"]?.single_template(test_data));
   });
 
-  test("If the module can handle templating with an object parameter", () => {
-    expect(i4n.t("object_template")).toBeInstanceOf(Function);
+  it("If the module can handle templating with an object parameter", () => {
+    assert.ok(i4n.t("object_template") instanceof Function);
     const test_input = { count: 4, type: "ice" };
-    expect(i4n.t("object_template", test_input)).toBe(testTranslations["en"]?.object_template(test_input));
+    assert.strictEqual(i4n.t("object_template", test_input), testTranslations["en"]?.object_template(test_input));
   });
 
-  test("If the t works detached from the i4n instance", () => {
+  it("If the t works detached from the i4n instance", () => {
     const { t } = i4n;
-    expect(t("earth")).toBe(testTranslations["en"]?.earth);
+    assert.strictEqual(t("earth"), testTranslations["en"]?.earth);
   });
 
-  test("If it works with a fallback key and random strings", () => {
-    expect(i4n.t("to_fallback")).toBe(undefined);
-    expect(i4n.t(["to_fallback"])).toBe(undefined);
-    expect(i4n.t(["to_fallback", "fallback"])).toBe(testTranslations["en"]?.fallback);
+  it("If it works with a fallback key and random strings", () => {
+    assert.strictEqual(i4n.t("to_fallback"), undefined);
+    assert.strictEqual(i4n.t(["to_fallback"]), undefined);
+    assert.strictEqual(i4n.t(["to_fallback", "fallback"]), testTranslations["en"]?.fallback);
   });
 
-  test("An undefined key should return undefined", () => {
-    expect(i4n.t(undefined as unknown as string)).toBe(undefined);
+  it("An undefined key should return undefined", () => {
+    assert.strictEqual(i4n.t(undefined as unknown as string), undefined);
   });
 
-  test("To see if an empty language switch thrws error", () => {
-    try {
-      i4n.switch(undefined as unknown as string);
-    } catch (e) {
-      expect(e).toBeInstanceOf(I4nException);
-      if (e instanceof I4nException) {
-        expect(e.type).toBe("invalid-language");
-      }
-    }
+  it("To see if an empty language switch thrws error", () => {
+    assert.throws(
+      () => i4n.switch(undefined as unknown as string),
+      (e) => e instanceof I4nException && e.type === "invalid-language",
+    );
   });
 
-  test("To see if a fallback language works", () => {
+  it("To see if a fallback language works", () => {
     i4n.switch("es");
-    expect(i4n.t("only_in_english")).toBe(undefined);
+    assert.strictEqual(i4n.t("only_in_english"), undefined);
     const _i4n = new I4n({ translations: testTranslations, language: "es", fallbackLanguage: "en" });
-    expect(_i4n.t("only_in_english")).toBe(testTranslations["en"]?.only_in_english);
+    assert.strictEqual(_i4n.t("only_in_english"), testTranslations["en"]?.only_in_english);
   });
 
-  test("If the active language can be get", () => {
+  it("If the active language can be get", () => {
     i4n.switch("en");
-    expect(i4n.active).toBe("en");
+    assert.strictEqual(i4n.active, "en");
 
     i4n.switch("es");
-    expect(i4n.active).toBe("es");
+    assert.strictEqual(i4n.active, "es");
   });
 
-  test("If the list of languages can be get", () => {
-    expect(i4n.languages).toEqual(["en", "es"]);
+  it("If the list of languages can be get", () => {
+    assert.deepStrictEqual(i4n.languages, ["en", "es"]);
   });
 
-  test("If the loader can load in any data through lazyloading", async () => {
+  it("If the loader can load in any data through lazyloading", async () => {
     const i4n = new I4n<typeof testTranslations>({ language: "en", loader: testJsonLoader });
     await i4n.loaded();
-    expect(i4n.t("earth")).toBe(testTranslations["en"]?.earth);
+    assert.strictEqual(i4n.t("earth"), testTranslations["en"]?.earth);
   });
 
-  test("If the ready state is good before and after the loader", async () => {
+  it("If the ready state is good before and after the loader", async () => {
     const i4n = new I4n<typeof testTranslations>({ language: "en", loader: testJsonLoader });
-    expect(i4n.ready).toBe(false);
+    assert.strictEqual(i4n.ready, false);
     await i4n.loaded();
-    expect(i4n.ready).toBe(true);
-    expect(i4n.t("earth")).toBe(testTranslations["en"]?.earth);
+    assert.strictEqual(i4n.ready, true);
+    assert.strictEqual(i4n.t("earth"), testTranslations["en"]?.earth);
   });
 
-  test("If the t function returns undefined if the data is undefined from the loader", async () => {
+  it("If the t function returns undefined if the data is undefined from the loader", async () => {
     const i4n = new I4n<typeof testTranslations>({ language: "en", loader: testEmptyLoader });
-    expect(i4n.ready).toBe(false);
+    assert.strictEqual(i4n.ready, false);
     await i4n.loaded();
-    expect(i4n.ready).toBe(true);
-    expect(i4n.t("earth")).toBe(undefined);
+    assert.strictEqual(i4n.ready, true);
+    assert.strictEqual(i4n.t("earth"), undefined);
   });
 
-  test("If the t function will return an undefined when not loaded", async () => {
+  it("If the t function will return an undefined when not loaded", async () => {
     const i4n = new I4n<typeof testTranslations>({ language: "en", loader: testJsonLoader });
-    expect(i4n.ready).toBe(false);
-    expect(i4n.t("earth")).toBe(undefined);
+    assert.strictEqual(i4n.ready, false);
+    assert.strictEqual(i4n.t("earth"), undefined);
     await i4n.loaded();
-    expect(i4n.ready).toBe(true);
-    expect(i4n.t("earth")).toBe(testTranslations["en"]?.earth);
+    assert.strictEqual(i4n.ready, true);
+    assert.strictEqual(i4n.t("earth"), testTranslations["en"]?.earth);
   });
 
-  test("If the late lazy loading works after init", async () => {
+  it("If the late lazy loading works after init", async () => {
     const i4n = new I4n<typeof testTranslations>({ language: "en", loader: testJsonLoader });
     await i4n.loaded();
 
     i4n.lazy({ loader: testAnotherLoader });
     await i4n.loaded({ lang: "fr" });
-    expect(i4n.languages).toContain("fr");
+    assert.ok(new Set<string>(i4n.languages).has("fr"));
 
     i4n.switch("fr");
-    expect(i4n.t("earth")).toBe("Terre");
+    assert.strictEqual(i4n.t("earth"), "Terre");
   });
 
-  test("If the late lazy loading still makes the existing keys work", async () => {
+  it("If the late lazy loading still makes the existing keys work", async () => {
     const i4n = new I4n<typeof testTranslations>({ language: "en", loader: testJsonLoader });
     await i4n.loaded();
 
@@ -214,12 +205,12 @@ describe("I4n", () => {
     await i4n.loaded({ lang: "fr" });
 
     i4n.switch("en");
-    expect(i4n.t("earth")).toBe(testTranslations["en"]?.earth);
+    assert.strictEqual(i4n.t("earth"), testTranslations["en"]?.earth);
   });
 
-  test("If the lazy loading works with just data and no loader", () => {
+  it("If the lazy loading works with just data and no loader", () => {
     const i4n = new I4n<TranslationSet>({ language: "en", translations: {} });
-    expect(i4n.t("earth")).toBe(undefined);
+    assert.strictEqual(i4n.t("earth"), undefined);
     i4n.lazy({
       data: {
         ...testTranslations["en"],
@@ -227,21 +218,13 @@ describe("I4n", () => {
       lang: "en",
     });
 
-    expect(i4n.t("earth")).toBe(testTranslations["en"]?.earth);
+    assert.strictEqual(i4n.t("earth"), testTranslations["en"]?.earth);
   });
 
-  test("If the lazy loading throws when no data and loader is passed, and when both are passed", () => {
+  it("If the lazy loading throws when no data and loader is passed, and when both are passed", () => {
     const i4n = new I4n<TranslationSet>({ language: "en", translations: {} });
-    try {
-      i4n.lazy({ data: testTranslations as any, loader: testJsonLoader as any });
-    } catch (error) {
-      expect(error).toBeInstanceOf(I4nException);
-    }
+    assert.throws(() => i4n.lazy({ data: testTranslations as any, loader: testJsonLoader as any }), I4nException);
 
-    try {
-      i4n.lazy({});
-    } catch (error) {
-      expect(error).toBeInstanceOf(I4nException);
-    }
+    assert.throws(() => i4n.lazy({}), I4nException);
   });
 });

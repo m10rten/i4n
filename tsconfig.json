@@ -3,6 +3,7 @@
   "display": "Default",
   "compilerOptions": {
     "module": "esnext",
+    "moduleResolution": "bundler",
     "target": "esnext",
     "composite": false,
     "declaration": true,
@@ -11,7 +12,6 @@
     "forceConsistentCasingInFileNames": true,
     "inlineSources": false,
     "isolatedModules": true,
-    "moduleResolution": "node",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "preserveWatchOutput": true,
