@@ -1,16 +1,10 @@
-export type I4nExceptionType = "invalid-language" | "invalid-translations" | "unexpected-exception";
+export type I4nExceptionType = "invalid-language";
 
 export class I4nException extends Error {
   public readonly type: I4nExceptionType;
-  public readonly from?: Error;
-  public constructor(
-    { message, type, error }: { type?: I4nExceptionType; message?: string; error?: Error } = {
-      message: "Unexpected exception within the `i4n` package",
-      type: "unexpected-exception",
-    },
-  ) {
-    super(`I4n: ${message}`);
-    this.type = type ?? "unexpected-exception";
-    this.from = error ?? undefined;
+  public constructor(type: I4nExceptionType, message: string, options?: ErrorOptions) {
+    super(`I4n: ${message}`, options);
+    this.name = "I4nException";
+    this.type = type;
   }
 }

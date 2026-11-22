@@ -1,20 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { I4nException } from "./errors.js";
+import { I4nException } from "./errors.ts";
 import type { Path, Value } from "./types.ts";
 
-export type I4nConfig<T, L extends keyof T & string> = {
-  language: L;
-  fallbackLanguage?: string | undefined | null;
-} & (
-  | {
-      translations: T;
-      loader?: never;
-    }
-  | {
-      translations?: never;
-      loader: (() => Promise<T> | (T & Record<string, unknown>)) | undefined;
-    }
-);
+export type I4nConfig<T> = {
+  translations: T;
+  language: keyof T & string;
+  fallbackLanguage?: keyof T & string;
+};
+
+type Dictionary<T> = NonNullable<T[keyof T]>;
+type Vars = Record<string, string | number>;
+type Args<V> = V extends (...args: infer A) => unknown ? A : V extends string ? [vars: Vars] : never;
+type Result<V> = V extends (...args: never[]) => infer R ? R : V;
 
 /**
  * @prop {translations} - the data required for the translation module to return text.
@@ -43,208 +39,95 @@ export type I4nConfig<T, L extends keyof T & string> = {
  * const text = i4n.t("hi"); // "Hello"
  * ```
  */
-export class I4n<T extends Record<string, unknown>, L extends keyof T & string = string> {
-  private _loading: boolean = false;
-  private _data: T = undefined as unknown as T;
-  private _config: I4nConfig<T, L>;
-  public constructor(config: I4nConfig<T, L>) {
-    if (!config?.loader && !config?.translations)
-      throw new I4nException({
-        message: "Expected `loader` or `translations` but found neither.",
-        type: "invalid-translations",
-      });
-    if (config.translations instanceof Set || config.translations instanceof Map || Array.isArray(config.translations))
-      throw new I4nException({
-        type: "invalid-translations",
-        message: "Array, Set or Map cannot be used as translations require keys",
-      });
-    if (config.translations) {
-      this._data = config.translations;
-    }
-    this._config = {
-      language: config.language,
-      fallbackLanguage: config.fallbackLanguage,
-      ...(config?.loader !== undefined && !config.translations ? { loader: config?.loader } : {}),
-      ...(config?.translations && !config.loader ? { translations: config?.translations } : {}),
-    } as I4nConfig<T, L>;
-
-    if (!config?.translations && !!config?.loader) {
-      this._startLoader(config?.loader);
-    }
+export class I4n<T extends Record<string, unknown>> {
+  private _data: T;
+  private _language: keyof T & string;
+  private readonly _fallbackLanguage: (keyof T & string) | undefined;
+  public constructor({ translations, language, fallbackLanguage }: I4nConfig<T>) {
+    this._data = translations;
+    this._language = language;
+    this._fallbackLanguage = fallbackLanguage;
 
     this.t = this.t.bind(this);
     this.switch = this.switch.bind(this);
-  }
-
-  private async _startLoader(loader?: undefined | (() => unknown), merge?: boolean | undefined) {
-    try {
-      if (loader === undefined) {
-        return;
-      }
-      this._loading = true;
-      const data = await loader();
-      this._loading = false;
-
-      if (merge) {
-        this._data = { ...this._data, ...(data as T) };
-      } else {
-        this._data = data as T;
-      }
-    } catch (error: unknown) {
-      if (error instanceof Error && !(error instanceof I4nException)) {
-        throw new I4nException({ error });
-      } else {
-        throw new I4nException();
-      }
-    }
+    this.add = this.add.bind(this);
   }
 
   /**
    * Get translations from your translations object with typesafety, input & output are typesafe meaning you always know if it works.
    * @param path the path to the translation, this is is typed for you based on the translations.
-   * @returns string or undefined based on the path you provide.
+   * @returns the string, template function or nested object at the path. A key that is missing at runtime, for example in a partially filled language, returns `undefined`.
    */
-  public t<P extends Path<T[L], L>, P2 extends Path<T[L], L>, V extends Value<T[L], L, P>>(
-    path: P | (string & {}) | [P | (string & {})] | [P | (string & {}), P2 | (string & {})],
-  ): V;
+  public t<P extends Path<Dictionary<T>>>(path: P | [string, P]): Value<Dictionary<T>, P>;
 
   /**
-   * You added parameters, expecting to find a function, do not force extra arguments if you are not expecting to find a function since that will confuse the type system and give you as a user the wrong types.
-   * @param path the path to the function
-   * @param args the typed parameters for this function
+   * Call a template function with its typed arguments, or replace the `{name}` placeholders of a string with `vars`.
+   * @param path the path to the function or string
+   * @param args the typed parameters for the function, or the vars for the string
    */
-  public t<
-    P extends Path<T[L], L>,
-    P2 extends Path<T[L], L>,
-    V extends Value<T[L], L, P>,
-    A extends (V extends (...args: infer A) => any ? A : never),
-    R extends (V extends (...args: any[]) => any ? ReturnType<V> : V),
-  >(path: (P | (string & {})) | [P | (string & {})] | [P | (string & {}), P2 | (string & {})], ...args: A): R;
+  public t<P extends Path<Dictionary<T>>>(
+    path: P | [string, P],
+    ...args: Args<Value<Dictionary<T>, P>>
+  ): Result<Value<Dictionary<T>, P>>;
 
-  /**
-   * `t` function on the `I4n` class.
-   * @param path string to find in your translations.
-   * @param args optional arguments to execute a template function.
-   * @returns a string from the translations, a function or object, or the result of a function.
-   */
-  public t(path: (string & {}) | [string & {}] | [string & {}, string & {}], ...args: unknown[]): unknown {
-    if (!this._data) return undefined;
-    const result = this._lookup(path);
-
-    if (typeof result === "function" && args.length !== 0) return result(...args);
-
-    const fbl = this._config.fallbackLanguage;
-    const hasFallbackLang = fbl !== null && fbl !== undefined;
-
-    const returned = result ?? (hasFallbackLang ? this._lookup(path, this._config.fallbackLanguage) : undefined);
-
-    return returned;
-  }
-
-  public get active(): string {
-    return this._config.language;
-  }
-
-  public get languages(): Array<keyof typeof this._data> {
-    if (!this._data) throw new I4nException();
-    return Object.keys(this._data);
-  }
-
-  private _lookup(
-    path: string | undefined | [string] | [string, string],
-    language: string | null | undefined = this._config.language,
-  ): any {
-    if (path === undefined) return undefined;
-    language ??= this._config.language;
-
-    if (!this._data) return undefined;
-
-    const key = Array.isArray(path) ? path[0] : path;
-    let hasFallbackKey = false;
-
-    if (Array.isArray(path) && path.length === 2) hasFallbackKey = true;
-    const fallbackKey = hasFallbackKey ? path[1] : undefined;
-
-    if (key === undefined) return undefined;
-    let result: any = this._data[language];
-
-    const keys = String(key).split(".");
-    for (const key of keys) {
-      result = result?.[key];
-      if (result === undefined && hasFallbackKey === false) {
-        return undefined as never;
-      } else if (result === undefined && hasFallbackKey) {
-        break;
-      }
-    }
-
-    return result ?? (fallbackKey ? this._lookup(fallbackKey) : undefined);
-  }
-
-  public get ready(): boolean {
-    return this._loading === false || this._data !== undefined;
-  }
-
-  public async loaded(options?: {
-    interval?: number;
-    signal?: AbortSignal;
-    key?: string | undefined;
-    lang?: L | (string & {});
-  }) {
-    const _options = { interval: 50, ...options };
-    if (_options.signal?.aborted) return;
-
-    const check = () => {
-      return (
-        this._loading === false &&
-        (_options?.key ? this._lookup(_options?.key, options?.lang) : this._data) !== undefined
+  public t(path: string | [string, string], ...args: unknown[]): unknown {
+    const value = this._lookup(Array.isArray(path) ? path : [path]);
+    if (args.length === 0) return value;
+    if (typeof value === "function") return value(...args);
+    if (typeof value === "string") {
+      const vars = (args[0] ?? {}) as Vars;
+      return value.replace(/\{(\w+)\}/g, (placeholder, name: string) =>
+        Object.hasOwn(vars, name) ? String(vars[name]) : placeholder,
       );
-    };
-
-    return new Promise((resolve, reject) => {
-      const checker = setInterval(() => {
-        if (_options.signal?.aborted) {
-          clearInterval(checker);
-          return reject(false);
-        }
-        if (check()) {
-          clearInterval(checker);
-          return resolve(true);
-        }
-      }, _options.interval);
-    });
+    }
+    return value;
   }
 
-  public lazy({
-    loader,
-    data,
-    lang,
-  }:
-    | {
-        loader?: never;
-        data?: Record<string, unknown>;
-        lang?: string;
+  public get active(): keyof T & string {
+    return this._language;
+  }
+
+  public get languages(): Array<keyof T & string> {
+    return Object.keys(this._data).filter((language) => this._data[language] != null) as Array<keyof T & string>;
+  }
+
+  private _get(language: string, key: string): unknown {
+    return [language, ...key.split(".")].reduce<unknown>(
+      (node, part) =>
+        typeof node === "object" && node !== null && !Array.isArray(node) && Object.hasOwn(node, part)
+          ? (node as Record<string, unknown>)[part]
+          : undefined,
+      this._data,
+    );
+  }
+
+  private _lookup(keys: string[]): unknown {
+    const [dynamicKey, typedKey] = keys;
+    const languages = [this._language, this._fallbackLanguage].filter((language) => language !== undefined);
+    const reference =
+      typedKey === undefined
+        ? undefined
+        : languages.map((language) => this._get(language, typedKey)).find((value) => value !== undefined);
+    for (const language of languages) {
+      for (const key of keys) {
+        const value = this._get(language, key);
+        if (value === undefined) continue;
+        if (key !== dynamicKey || reference === undefined || typeof value === typeof reference) return value;
       }
-    | {
-        data?: never;
-        lang?: never;
-        loader?: undefined | (() => T[L] | Promise<T[L]> | Record<string, unknown> | Promise<Record<string, unknown>>);
-      }) {
-    if (data && loader)
-      throw new I4nException({
-        type: "invalid-translations",
-        message: "`data` or `loader` were both set while lazy loading, pick one to continue",
-      });
-    if (!data && !loader)
-      throw new I4nException({
-        type: "invalid-translations",
-        message: "`data` or `loader` was not set while lazy loading, pick either to start lazy loading",
-      });
-    if (lang && data) this._data = { ...this._data, ...{ [lang]: data } };
-    if (!lang && data) this._data = { ...this._data, ...data };
-    if (loader !== undefined) {
-      this._startLoader(loader, true);
     }
+    return undefined;
+  }
+
+  /**
+   * Add translations to a language, or add a language. Top-level keys of the dictionary replace those of the language.
+   * @param language the language to add to
+   * @param dictionary the translations to add
+   */
+  public add(language: keyof T & string, dictionary: Partial<Dictionary<T>>): void {
+    this._data = {
+      ...this._data,
+      [language]: { ...(Object.hasOwn(this._data, language) ? (this._data[language] as object) : {}), ...dictionary },
+    };
   }
 
   /**
@@ -252,11 +135,10 @@ export class I4n<T extends Record<string, unknown>, L extends keyof T & string =
    * @param language language to switch to
    * @returns {void} - nothing.
    */
-  public switch(language: keyof T | (string & {})): void {
-    if (!language) throw new I4nException({ type: "invalid-language", message: "Language cannot be empty." });
-    if (!this._data[language])
-      throw new I4nException({ type: "invalid-language", message: "Language is not in the translations" });
-    this._config.language = language as L;
+  public switch(language: keyof T & string): void {
+    if (!Object.hasOwn(this._data, language) || this._data[language] == null)
+      throw new I4nException("invalid-language", `Language "${language}" is not in the translations.`);
+    this._language = language;
   }
 }
 

@@ -9,10 +9,6 @@ type TranslationSet = {
   [lang in Language]?: LanguageData;
 };
 
-async function loadFrench(): Promise<TranslationSet> {
-  return await import("./fr.json");
-}
-
 export const translations = {
   en: {
     hello: "Hello World!",
@@ -23,7 +19,7 @@ export const translations = {
   },
 } satisfies TranslationSet;
 
-const i4n = new I4n({
+const i4n = new I4n<TranslationSet>({
   translations,
   language: "en",
   fallbackLanguage: "en",
@@ -38,8 +34,7 @@ const main = async () => {
 
   console.log(i4n.t("key"));
 
-  i4n.lazy({ loader: loadFrench });
-  await i4n.loaded({ lang: "fr" });
+  i4n.add("fr", (await import("./fr.json")).default.fr);
   i4n.switch("fr");
   console.log(i4n.t("hello"));
 };

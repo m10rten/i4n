@@ -45,7 +45,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Test 🧪
-        run: ./node_modules/.bin/tsx --test "tests/**/*.test.ts"
+        run: node --test "tests/**/*.test.ts"
       - name: Smoke test dist 💨
         run: |
           node --input-type=module -e "import { I4n } from './dist/index.js'; if (typeof I4n !== 'function') process.exit(1)"

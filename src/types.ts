@@ -1,24 +1,21 @@
-type Extraction<T, Key extends keyof T> = Key extends string
-  ? T[Key] extends Record<string, unknown>
-    ? | `${Key}.${Extraction<T[Key], Exclude<keyof T[Key], keyof unknown[]>> & string}`
-      | `${Key}.${Exclude<keyof T[Key], keyof unknown[]> & string}`
-    : never
-  : never;
+type SubPath<V, K extends string> =
+  // An `any` value would recurse without end (TS2589), so it accepts any sub path.
+  0 extends 1 & V
+    ? `${K}.${string}`
+    : V extends ((...args: never[]) => unknown) | readonly unknown[]
+      ? never
+      : V extends object
+        ? `${K}.${Path<V>}`
+        : never;
 
-type Implementation<T> = Extraction<T, keyof T & string> | (keyof T & string);
-export type Path<T, L extends string | number> =
-  Implementation<T> extends string | keyof T ? RemovePrefix<`${L}.`, Implementation<T>> : keyof T;
+export type Path<D> = D extends unknown ? { [K in keyof D & string]: K | SubPath<D[K], K> }[keyof D & string] : never;
 
-export type Value<T, L extends string | number, P extends Path<T, L>> = P extends `${infer Key}.${infer Rest}`
-  ? Key extends keyof T
-    ? Rest extends Path<T[Key], L>
-      ? Value<T[Key], L, Rest>
+export type Value<D, P extends string> = D extends unknown
+  ? P extends keyof D
+    ? D[P]
+    : P extends `${infer K}.${infer Rest}`
+      ? K extends keyof D
+        ? Value<D[K], Rest>
+        : never
       : never
-    : never
-  : P extends keyof T
-    ? T[P]
-    : never;
-
-type RemovePrefix<TPrefix extends string, TString extends string> = TString extends `${TPrefix}${infer Rest}`
-  ? Rest
-  : TString;
+  : never;

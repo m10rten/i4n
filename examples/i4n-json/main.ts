@@ -1,4 +1,5 @@
 import { I4n } from "i4n";
+import json from "./translations.json";
 
 interface LanguageData {
   hello: string;
@@ -9,17 +10,15 @@ type TranslationSet = {
   [lang in Language]?: LanguageData;
 };
 
-const jsonLoader = async () => await import("./translations.json");
+const translations: TranslationSet = json;
 
-const i4n = new I4n<TranslationSet>({
+const i4n = new I4n({
+  translations,
   language: "en",
   fallbackLanguage: "en",
-  loader: jsonLoader,
 });
 
-const main = async () => {
-  await i4n.loaded();
-
+const main = () => {
   console.log(i4n.t("hello")); // "Hello"
 
   console.log("Swapping", i4n.switch("nl"));

@@ -1,6 +1,6 @@
 {
   "name": "i4n",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "description": "Lightweight, Zero dependencies, Typesafe and Simple to use translations for TypeScript.",
   "private": false,
   "types": "./dist/index.d.ts",
@@ -18,10 +18,10 @@
   "scripts": {
     "build": "tsup --format esm,cjs --dts",
     "lint": "eslint src/**/*.ts",
-    "test": "tsx --test \"tests/**/*.test.ts\"",
+    "test": "node --test \"tests/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
-    "test:coverage": "tsx --test --experimental-test-coverage \"tests/**/*.test.ts\"",
-    "test:ci": "tsx --test \"tests/**/*.test.ts\"",
+    "test:coverage": "node --test --experimental-test-coverage \"tests/**/*.test.ts\"",
+    "test:ci": "node --test \"tests/**/*.test.ts\"",
     "prettier:check": "prettier --check .",
     "format": "prettier --write .",
     "generate": "echo 'Not implemented yet.'",
@@ -49,7 +49,6 @@
     "husky": "9.1.7",
     "prettier": "3.10.1",
     "tsup": "8.5.0",
-    "tsx": "4.19.4",
     "typescript": "5.8.3",
     "typescript-eslint": "8.32.1"
   },
@@ -64,50 +63,7 @@
         "default": "./dist/index.cjs"
       }
     },
-    "./i4n": {
-      "import": {
-        "types": "./dist/i4n.d.ts",
-        "default": "./dist/i4n.js"
-      },
-      "require": {
-        "types": "./dist/i4n.d.cts",
-        "default": "./dist/i4n.cjs"
-      }
-    },
-    "./errors": {
-      "import": {
-        "types": "./dist/errors.d.ts",
-        "default": "./dist/errors.js"
-      },
-      "require": {
-        "types": "./dist/errors.d.cts",
-        "default": "./dist/errors.cjs"
-      }
-    },
-    "./types": {
-      "import": {
-        "types": "./dist/types.d.ts",
-        "default": "./dist/types.js"
-      },
-      "require": {
-        "types": "./dist/types.d.cts",
-        "default": "./dist/types.cjs"
-      }
-    },
     "./package.json": "./package.json"
-  },
-  "typesVersions": {
-    "*": {
-      "i4n": [
-        "dist/i4n.d.ts"
-      ],
-      "errors": [
-        "dist/errors.d.ts"
-      ],
-      "types": [
-        "dist/types.d.ts"
-      ]
-    }
   },
   "files": [
     "dist",

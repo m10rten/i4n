@@ -20,7 +20,10 @@
     "strictNullChecks": true,
     "noImplicitAny": true,
     "noUncheckedIndexedAccess": true,
-    "allowUnreachableCode": false
+    "allowUnreachableCode": false,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "noEmit": true
   },
   "exclude": ["node_modules", "dist", "examples"]
 }
