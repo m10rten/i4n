@@ -24,7 +24,6 @@
     "test:ci": "node --test \"tests/**/*.test.ts\"",
     "prettier:check": "prettier --check .",
     "format": "prettier --write .",
-    "generate": "echo 'Not implemented yet.'",
     "precheck": "pnpm typecheck && pnpm lint",
     "verify": "pnpm build && pnpm test",
     "prepare": "husky"

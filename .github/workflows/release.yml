@@ -42,11 +42,6 @@ jobs:
       - run: pnpm install --frozen-lockfile
         name: Install dependencies
 
-      - name: Generate deps 🍪
-        run: pnpm run generate
-        env:
-          CI: true
-
       - name: Verify Packages 🧷📦,⚡
         run: pnpm run precheck
 
@@ -64,11 +59,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
-        run: |
-          notes=$(mktemp)
-          awk -v heading="## ${TAG#v}" '/^## / { if (found) exit; found = ($0 == heading); next } found' CHANGELOG.md > "$notes"
-          if ! grep -q '[^[:space:]]' "$notes"; then
-            echo "CHANGELOG.md has no notes under '## ${TAG#v}'"
-            exit 1
-          fi
-          gh release create "$TAG" --verify-tag --title "$TAG" --notes-file "$notes"
+        run: gh release create "$TAG" --verify-tag --title "$TAG" --generate-notes
